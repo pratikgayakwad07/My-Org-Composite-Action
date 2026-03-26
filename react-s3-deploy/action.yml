@@ -17,7 +17,7 @@ runs:
     - name: Install Node
       uses: actions/setup-node@v3
       with:
-        node-version: '22'
+        node-version: '24'
 
     - name: Install Dependencies
       run: npm install
