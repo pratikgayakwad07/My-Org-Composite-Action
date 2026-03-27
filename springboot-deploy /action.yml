@@ -39,7 +39,6 @@ runs:
 
     - name: Copy JAR to EC2
       run: |
-        JAR_FILE=$(ls target/*.jar | head -n 1)
         scp -o StrictHostKeyChecking=no -i key.pem $JAR_FILE ${{ inputs.ec2-user }}@${{ inputs.ec2-host }}:/home/ubuntu/app.jar
       shell: bash
 
