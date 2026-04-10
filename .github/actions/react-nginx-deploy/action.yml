@@ -1,0 +1,68 @@
+name: "React Build and Deploy"
+description: "Build React app and deploy to EC2 via SSH"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "18"
+
+  build-folder:
+    description: "React build folder"
+    required: false
+    default: "build"
+
+  ec2-host:
+    description: "EC2 Public IP"
+    required: true
+
+  ec2-user:
+    description: "EC2 SSH user"
+    required: true
+    default: "ubuntu"
+
+  ec2-ssh-key:
+    description: "Private SSH key"
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    # 1. Setup Node
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    # 2. Install dependencies
+    - name: Install Dependencies
+      run: npm install
+      shell: bash
+
+    # 3. Build React App
+    - name: Build App
+      run: npm run build
+      shell: bash
+
+    # 4. Copy build to EC2
+    - name: Copy Files to EC2
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ inputs.ec2-host }}
+        username: ${{ inputs.ec2-user }}
+        key: ${{ inputs.ec2-ssh-key }}
+        source: "${{ inputs.build-folder }}/*"
+        target: "/home/${{ inputs.ec2-user }}/react-deploy"
+
+    # 5. Deploy via SSH
+    - name: Deploy on EC2
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ inputs.ec2-host }}
+        username: ${{ inputs.ec2-user }}
+        key: ${{ inputs.ec2-ssh-key }}
+        script: |
+          sudo rm -rf /var/www/html/*
+          sudo cp -r /home/${{ inputs.ec2-user }}/react-deploy/${{ inputs.build-folder }}/* /var/www/html/
+          sudo systemctl restart nginx
