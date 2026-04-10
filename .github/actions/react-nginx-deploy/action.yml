@@ -65,4 +65,4 @@ runs:
         script: |
           sudo rm -rf /var/www/html/*
           sudo cp -r /home/${{ inputs.ec2-user }}/react-deploy/${{ inputs.build-folder }}/* /var/www/html/
-          sudo systemctl stop nginx
+          sudo systemctl restart nginx
